@@ -4,17 +4,21 @@
 
 import numpy as np
 import tensorflow as tf
-
+from sklearn.metrics import classification_report
+import assign
+import accuracy
+import plot_file
+import plot_graph 
 
 # //////////////////////////////////////// Load model
-model_name = "1641502791"
-import_path = "./tmp/saved_models/{}".format(int(model_name))
+model_name = "1650903661"
+import_path = "/home/bart/home/DeepLearning/DeepSafety/tmp/saved_models/{}".format(int(model_name))
 model = tf.keras.models.load_model(import_path)
 
 # //////////////////////////////////////// Load data
 # You will need to unzip the respective batch folders.
 # Obviously Batch_0 is not sufficient for testing as you will soon find out.
-data_root = "./safetyBatches/Batch_0/"
+data_root = "/home/bart/home/DeepLearning/DeepSafety/safetyBatches/Batch_6/"
 batch_size = 32
 img_height = 224
 img_width = 224
@@ -24,7 +28,7 @@ test_ds = tf.keras.utils.image_dataset_from_directory(
   seed=123,
   image_size=(img_height, img_width),
   batch_size=batch_size,
-  shuffle=False
+  shuffle=False #Dat kann man bestimmt ändern
 )
 
 # Get information on your classes
@@ -44,18 +48,30 @@ test_ds = test_ds.map(lambda x, y: (normalization_layer(x), y))  # Where x—ima
 predictions = model.predict(test_ds)
 predictions = np.argmax(predictions, axis=1)
 print('Predictions: ', predictions)
+test_labels = assign.assign(class_names, test_labels)# addded a function to assign the correct classes to the positions in the array 
 print('Ground truth: ', test_labels)
 
 
-# //////////////////////////////////////// Let the validation begin
-# Probably you will want to at least migrate these to another script or class when this grows..
-def accuracy(predictions, test_labels):
-    metric = tf.keras.metrics.Accuracy()
-    metric.update_state(predictions, test_labels)
-    return metric.result().numpy()
 
-print('Accuracy: ', accuracy(predictions, test_labels))
 
+print('Accuracy: ', accuracy.accuracy(predictions, test_labels))
+
+
+
+for i in range(len(test_labels)):
+  plot_file.log_in_file(test_labels[i], "Accuracy", accuracy.accuracy(predictions[i], test_labels[i]))
+  plot_graph.plot_graph(test_labels[i], "Accuracy")
+
+for name, acc in accuracy.class_accuracy(predictions, test_labels).items():
+  plot_file.log_in_file(name, "class_accuracy", acc)
+  plot_graph.plot_graph(name, "class_accuracy")
+
+for name, acc in accuracy.precision(predictions, test_labels).items():
+  plot_file.log_in_file(name, "precision", acc)
+  plot_graph.plot_graph(name, "precision")
+
+print(accuracy.class_accuracy(predictions, test_labels))
+print(accuracy.precision(predictions, test_labels))
 # There is more and this should get you started: https://www.tensorflow.org/api_docs/python/tf/keras/metrics
 # However it is not about how many metrics you crank out, it is about whether you find the meangingful ones and report on them.
 # Think about a system on how to decide which metric to go for..

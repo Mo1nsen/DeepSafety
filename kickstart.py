@@ -37,9 +37,9 @@ feature_extractor_model = inception_v3  # @param ["mobilenet_v2", "inception_v3"
 # https://www.kaggle.com/meowmeowmeowmeowmeow/gtsrb-german-traffic-sign/download
 
 # store it to a local folder which you need to define here, for now we only care about the Train data part:
-data_root = "./data/Train/"
+data_root = "/home/bart/home/DeepLearning/1stDataSet"
 
-batch_size = 32
+batch_size = 32 #32
 img_height = 224
 img_width = 224
 
@@ -93,14 +93,15 @@ model = tf.keras.Sequential([
   tf.keras.layers.Dense(num_classes)
 ])
 
-# model.summary() (in case you care how the whole thing looks now)
+# 
+model.summary() #(in case you care how the whole thing looks now)
 
 
 # //////////////////////////////////////// Training or wild hand waving on caffeine
 
 # This starts tensorboard to you can check how your training is progressing
 # Helping you with tracking your training, resort to tensorboard, which can be accessed via the browser
-tracking_address = "./logs"
+tracking_address = "/home/bart/home/DeepLearning/DeepSafety/logs"
 tb = program.TensorBoard()
 tb.configure(argv=[None, '--logdir', tracking_address])
 url = tb.launch()
@@ -113,12 +114,12 @@ model.compile(
   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
   metrics=['acc'])
 
-log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = "/home/bart/home/DeepLearning/DeepSafety/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(
     log_dir=log_dir,
     histogram_freq=1)  # Enable histogram computation for every epoch.
 
-NUM_EPOCHS = 50  # This is probably not enough
+NUM_EPOCHS = 1  # 50 This is probably not enough
 
 history = model.fit(train_ds,
                     validation_data=val_ds,
@@ -129,5 +130,5 @@ history = model.fit(train_ds,
 # and which information you will need to link with the model when doing so
 t = time.time()
 
-export_path = "./tmp/saved_models/{}".format(int(t))
+export_path = "/home/bart/home/DeepLearning/DeepSafety/tmp/saved_models/{}".format(int(t))
 model.save(export_path)
